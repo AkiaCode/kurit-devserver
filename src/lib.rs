@@ -118,7 +118,7 @@ fn handle_client<T: Read + Write>(mut stream: T, root_path: &str, reload: bool, 
 
         stream.flush().unwrap();
     } else {
-        println!("Could not find file: {}", path.to_str().unwrap());
+        //println!("Could not find file: {}", path.to_str().unwrap());
         let response = "HTTP/1.1 404 NOT FOUND\r\n\r\n";
         stream.write_all(response.as_bytes()).unwrap();
         stream.flush().unwrap();

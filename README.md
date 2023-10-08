@@ -1,37 +1,31 @@
-# devserver [![Crates.io](https://img.shields.io/crates/v/devserver.svg)](https://crates.io/crates/devserver)
+# devserver_lib
+devserver_lib does (nearly) the minimum necessary to serve a static folder over https://localhost:8080.
 
+**DO NOT USE DEVSERVER_LIB IN PRODUCTION**
 
-An extremely tiny tool to serve a static folder locally.
+`devserver_lib` should only be used for locally hosting files on a trusted network. 
 
-This tool is only for local development and makes no effort to be secure for other purposes.
+`devserver_lib` does not properly handle the attacks robust servers must withstand on an open network.
 
-**DO NOT USE DEVSERVER IN PRODUCTION**
+## usage
+```rust
+extern crate devserver_lib;
 
-devserver should only be used for locally hosting files on a trusted network.
-
-devserver does not properly handle the attacks robust servers must withstand on an open network.
-
-## Installation
-```
-cargo install devserver
-```
-
-## Usage
-Open a command line and navigate to the directory you'd like to host then run:
-```
-devserver
+fn main() 
+{
+  devserver_lib::run(&"localhost", 8080, "", /*Auto-reload:*/ true ); // Runs forever serving the current folder on http://localhost:8080
+}
 ```
 
-Visit http://localhost:8080 or https://localhost:8080 to see your hosted content.
+## dependencies
+[rust-native-tls](https://github.com/sfackler/rust-native-tls)
 
-## Options
-`--reload`  Automatically refresh pages when a file in the hosted folder changes.
+Dependencies only for the reload feature:
+[notify](https://github.com/notify-rs/notify)
+[sha-1](https://github.com/RustCrypto/hashes)
+[base64](https://github.com/marshallpierce/rust-base64)
 
-`--address` Pass an address like "127.0.0.1:8080" or "localhost:8000" to change the address the server will host on.
+## Resources to learn from
+https://doc.rust-lang.org/book/ch20-00-final-project-a-web-server.html
 
-`--path`    Changes the directory to be hosted.
-
-`--header`  Pass a header like "Access-Control-Allow-Origin='\*'". Use multiple `--header` flags for multiple headers.
-
-`--help`    Explains available options.
-
+http://concisecoder.io/2019/05/11/creating-a-static-http-server-with-rust-part-1/

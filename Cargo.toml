@@ -1,16 +1,25 @@
 [package]
-name = "devserver"
+name = "kurit-devserver"
 version = "0.4.3"
-authors = ["Ian Kettlewell <ian.kettlewell@gmail.com>"]
+authors = ["Ian Kettlewell <ian.kettlewell@gmail.com>", "AkiaCode"]
 edition = "2018"
 license = "Zlib"
-repository = "https://github.com/kettle11/devserver"
+description = "A zero configuration library for hosting a local folder via https. Refer to 'devserver' for the command line tool."
+repository = "https://github.com/kettle11/devserver/tree/master/devserver_lib"
 readme = "README.md"
 keywords = ["web", "server", "https", "http"]
-categories = ["command-line-utilities", "development-tools", "web-programming::http-server"]
-description = "A simple server for locally hosting a folder."
+categories = ["web-programming::http-server"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "kurit_devserver"
 
 [dependencies]
-devserver_lib = { path = "devserver_lib", version = "0.4.1", features = ["reload", "https"] }
+native-tls = {version = "0.2.11", optional = true}
+notify = {version = "6.1.1", optional = true}
+sha-1 = {version = "0.10.1", optional = true}
+base64 = {version = "0.21.4", optional = true}
+
+[features]
+default = ["https"]
+https = ["native-tls"]
+reload = ["notify", "sha-1", "base64"]
