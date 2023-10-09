@@ -4,7 +4,7 @@ version = "0.4.3"
 authors = ["Ian Kettlewell <ian.kettlewell@gmail.com>", "AkiaCode"]
 edition = "2018"
 license = "Zlib"
-description = "A zero configuration library for hosting a local folder via https. Refer to 'devserver' for the command line tool."
+description = "A zero configuration library for hosting a local folder via http. Refer to 'devserver' for the command line tool."
 repository = "https://github.com/kettle11/devserver/tree/master/devserver_lib"
 readme = "README.md"
 keywords = ["web", "server", "https", "http"]
@@ -14,12 +14,10 @@ categories = ["web-programming::http-server"]
 name = "kurit_devserver"
 
 [dependencies]
-native-tls = {version = "0.2.11", optional = true}
 notify = {version = "6.1.1", optional = true}
 sha-1 = {version = "0.10.1", optional = true}
 base64 = {version = "0.21.4", optional = true}
 
 [features]
-default = ["https"]
-https = ["native-tls"]
+default = []
 reload = ["notify", "sha-1", "base64"]

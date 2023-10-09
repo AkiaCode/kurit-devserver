@@ -1,11 +1,5 @@
 /// A local host only for serving static files.
 /// Simple and easy, but not robust or tested.
-
-#[cfg(feature = "https")]
-use native_tls::{Identity, TlsAcceptor};
-#[cfg(feature = "https")]
-use std::sync::Arc;
-
 use std::ffi::OsStr;
 use std::fs;
 use std::io::BufRead;
@@ -126,17 +120,6 @@ fn handle_client<T: Read + Write>(mut stream: T, root_path: &str, reload: bool, 
 }
 
 pub fn run(address: &str, port: u32, path: &str, reload: bool, headers: &str) {
-    #[cfg(feature = "https")]
-    let acceptor = {
-        // Hard coded certificate generated with the following commands:
-        // openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 36500 -nodes -subj "/"
-        // openssl pkcs12 -export -out identity.pfx -inkey key.pem -in cert.pem
-        // password for second command: 'debug'
-        let bytes = include_bytes!("identity.pfx");
-        let identity = Identity::from_pkcs12(bytes, "debug").unwrap();
-        Arc::new(TlsAcceptor::new(identity).unwrap())
-    };
-
     #[cfg(feature = "reload")]
     {
         if reload {
@@ -152,34 +135,10 @@ pub fn run(address: &str, port: u32, path: &str, reload: bool, headers: &str) {
     let listener = TcpListener::bind(address_with_port).unwrap();
     for stream in listener.incoming() {
         if let Ok(stream) = stream as Result<std::net::TcpStream, std::io::Error> {
-            #[cfg(feature = "https")]
-            let acceptor = acceptor.clone();
-
             let path = path.to_owned();
             let headers = headers.to_owned();
             thread::spawn(move || {
-                // HTTP requests always begin with a verb like 'GET'.
-                // HTTPS requests begin with a number, so peeking and checking for a number
-                // is used to determine if a request is HTTPS or HTTP
-                let mut buf = [0; 2];
-                stream.peek(&mut buf).expect("peek failed");
-
-                #[cfg(feature = "https")]
-                let is_https = !(char::from_u32(buf[0].into()).unwrap().is_alphabetic()
-                    && char::from_u32(buf[1].into()).unwrap().is_alphabetic());
-
-                #[cfg(not(feature = "https"))]
-                let is_https = false;
-
-                if is_https {
-                    // acceptor.accept will block indefinitely if called with an HTTP stream.
-                    #[cfg(feature = "https")]
-                    if let Ok(stream) = acceptor.accept(stream) {
-                        handle_client(stream, &path, reload, &headers);
-                    }
-                } else {
-                    handle_client(stream, &path, reload, &headers);
-                }
+                handle_client(stream, &path, reload, &headers);
             });
         }
     }
