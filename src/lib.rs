@@ -54,7 +54,7 @@ fn handle_client<T: Read + Write>(mut stream: T, root_path: &str, reload: bool, 
 
     // Replace white space characters with proper whitespace and remove any paths that refer to the parent.
     let path = path.replace("../", "").replace("%20", " ");
-    let path = if path.ends_with("/") {
+    let path = if path.ends_with('/') {
         Path::new(root_path).join(Path::new(&format!(
             "{}{}",
             path.trim_start_matches('/'),
@@ -66,7 +66,7 @@ fn handle_client<T: Read + Write>(mut stream: T, root_path: &str, reload: bool, 
 
     let extension = path.extension().and_then(OsStr::to_str);
 
-    let (file_contents, extension) = if extension != None {
+    let (file_contents, extension) = if extension.is_some() {
         (fs::read(&path), extension)
     } else {
         // If the request has no extension look first for a matching file without an extension
@@ -76,7 +76,7 @@ fn handle_client<T: Read + Write>(mut stream: T, root_path: &str, reload: bool, 
         } else {
             // If no file without an extension is found see if there's a file with a ".html" extension
             // This enables "pretty URLs" without a trailing `/` like: `example.com/blog-post`
-            let file = fs::read(&path.with_extension("html"));
+            let file = fs::read(path.with_extension("html"));
             (file, Some("html"))
         }
     };
@@ -151,7 +151,7 @@ pub fn run(address: &str, port: u32, path: &str, reload: bool, headers: &str) {
     let address_with_port = format!("{}:{:?}", address, port);
     let listener = TcpListener::bind(address_with_port).unwrap();
     for stream in listener.incoming() {
-        if let Ok(stream) = stream {
+        if let Ok(stream) = stream as Result<std::net::TcpStream, std::io::Error> {
             #[cfg(feature = "https")]
             let acceptor = acceptor.clone();
 
@@ -165,8 +165,8 @@ pub fn run(address: &str, port: u32, path: &str, reload: bool, headers: &str) {
                 stream.peek(&mut buf).expect("peek failed");
 
                 #[cfg(feature = "https")]
-                let is_https =
-                    !((buf[0] as char).is_alphabetic() && (buf[1] as char).is_alphabetic());
+                let is_https = !(char::from_u32(buf[0].into()).unwrap().is_alphabetic()
+                    && char::from_u32(buf[1].into()).unwrap().is_alphabetic());
 
                 #[cfg(not(feature = "https"))]
                 let is_https = false;
